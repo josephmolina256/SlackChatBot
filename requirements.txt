@@ -1,0 +1,7 @@
+slack-sdk
+slack_bolt
+hugchat
+fastapi
+uvicorn
+python-dotenv
+dotenv
