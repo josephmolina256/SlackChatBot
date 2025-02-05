@@ -21,8 +21,10 @@ def get_channel_id(channel_name: str):
         if channel["name"] == channel_name:
             return channel["id"]
     return None
-BOT_PRACTICE_CHANNEL_ID = get_channel_id("random")
-print(BOT_PRACTICE_CHANNEL_ID)
+
+desired_channel = "random"
+BOT_PRACTICE_CHANNEL_ID = get_channel_id(desired_channel)
+print(desired_channel, BOT_PRACTICE_CHANNEL_ID)
 
 
 import json
@@ -81,13 +83,18 @@ def handle_message(event, say):
                 retrieved_qa  = retrieve_similar_question(user_message)
 
                 # Build context for the LLM
-                context = (
-                    f"User asked: {user_message}\n"
-                    "Here is a related Q&A pair that may help answer the question:\n"
-                    f"Q: {retrieved_qa['question']}\n"
-                    f"A: {retrieved_qa['answer']}\n"
-                    "Now generate the best response based on this information.\n\n"
-                )
+                if retrieved_qa:
+                    context = (
+                        f"User asked: {user_message}\n"
+                        "Here is a related Q&A pair that may help answer the question:\n"
+                        f"Q: {retrieved_qa['question']}\n"
+                        f"A: {retrieved_qa['answer']}\n"
+                        "Now generate the best response based on this information.\n\n"
+                    )
+                else:
+                    context = (
+                        f"User asked: {user_message}\n"
+                    )
 
                 # Pass the context-enhanced message to the chatbot
                 res = context + chat_wrapper.get_chatbot().chat(context).wait_until_done()
