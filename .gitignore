@@ -13,6 +13,9 @@ __pycache__/
 Thumbs.db
 cookies/
 
+# large data files
+*.db
+
 # Environment files
 .env
 .venv/

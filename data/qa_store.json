@@ -1,4 +1,20 @@
 [
-    {"question": "How do I reset my password?", "answer": "Go to settings and click reset password."},
-    {"question": "What are the Slack bot commands?", "answer": "Use 'Echo: <message>' or 'Chat: <query>'."}
+    {
+        "question": "Who can I ask for help?",
+        "answer": "Answer: Soor\nAnswer: Liv",
+        "channel_id": "C06TPPJ49GV",
+        "thread_ts": "1739304460.074639"
+    },
+    {
+        "question": "Is there a way to delete messages in Slack?",
+        "answer": "Answer: Yes, hover over your message, click the three dots, and select 'Delete message' (if your admin allows it).",
+        "channel_id": "C06TPPJ49GV",
+        "thread_ts": "1739304404.825049"
+    },
+    {
+        "question": "What are the Slack bot commands?",
+        "answer": "Answer: Please use one of the following prefixes:\n\"Echo:\",\n\"Chat:\"",
+        "channel_id": "C06TPPJ49GV",
+        "thread_ts": "1739304368.357309"
+    }
 ]

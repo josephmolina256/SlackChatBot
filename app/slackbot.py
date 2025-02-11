@@ -27,39 +27,46 @@ BOT_PRACTICE_CHANNEL_ID = get_channel_id(desired_channel)
 print(desired_channel, BOT_PRACTICE_CHANNEL_ID)
 
 
+import sqlite3
 import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import cosine
 
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-def load_qa_data(file_path="./data/qa_store.json"):
-    with open(file_path, "r") as file:
-        return json.load(file)
-    
-qa_data = load_qa_data()
-qa_embeddings = {item["question"]: embedding_model.encode(item["question"]) for item in qa_data}
+conn = sqlite3.connect('./data/slack_threads.db')
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM thread_data")
+rows = cursor.fetchall()
+conn.close()
 
 
-def retrieve_similar_question(user_query, threshold=0.3):
+def retrieve_similar_question(user_query, threshold=0.4):
     """Finds the most similar question from the stored Q&A pairs and returns both the question and answer."""
     user_embedding = embedding_model.encode(user_query)
 
     best_match = None
     best_score = float("inf")
 
-    for question, embedding in qa_embeddings.items():
+    for i, row in enumerate(rows):
+        index, question, answer, channel_id, thread_ts, embedding_json = row  # Unpack tuple
+        embedding = np.array(json.loads(embedding_json))  # Convert JSON string back to np array
+        
         score = cosine(user_embedding, embedding)
         if score < best_score:  # Lower cosine distance = higher similarity
             best_score = score
-            best_match = question
+            best_match_index = i
 
     # Return both question and answer if similarity is above threshold
     if best_score < threshold:
-        for item in qa_data:
-            if item["question"] == best_match:
-                return {"question": best_match, "answer": item["answer"]}
+        index, question, answer, channel_id, thread_ts, embedding_json = rows[best_match_index]
+
+        return {
+            "question": question, 
+            "answer": answer,
+            "channel_id": channel_id,
+            "thread_ts": thread_ts
+            }
     
     return None
 
@@ -85,10 +92,10 @@ def handle_message(event, say):
                 # Build context for the LLM
                 if retrieved_qa:
                     context = (
-                        f"User asked: {user_message}\n"
-                        "Here is a related Q&A pair that may help answer the question:\n"
-                        f"Q: {retrieved_qa['question']}\n"
-                        f"A: {retrieved_qa['answer']}\n"
+                        f"User asked: {user_message}\n\n"
+                        "Here is a related Q&A that may help answer the question:\n"
+                        f"Question: {retrieved_qa['question']}\n"
+                        f"{retrieved_qa['answer']}\n\n"
                         "Now generate the best response based on this information.\n\n"
                     )
                 else:
@@ -97,7 +104,18 @@ def handle_message(event, say):
                     )
 
                 # Pass the context-enhanced message to the chatbot
-                res = context + chat_wrapper.get_chatbot().chat(context).wait_until_done()
+                res = (
+                        f"{context}"
+                        f"{chat_wrapper.get_chatbot().chat(context).wait_until_done()}\n\n"
+                        "References:\n"
+                        f"https://sfomttir.slack.com/archives/{retrieved_qa['channel_id']}/p{retrieved_qa['thread_ts'].replace('.', '')}"
+                    )
+            elif user_message.startswith("Reference Test:"):
+                channel_id = "C06TPPJ49GV"  # Replace with the actual channel ID
+                thread_ts = "1738793288.381539"
+                res = (
+                    f"https://sfomttir.slack.com/archives/{channel_id}/p{thread_ts.replace('.', '')}"
+                )
             else:
                 res = ('Please use one of the following prefixes:\n'
                       '"Echo:",\n' 
@@ -109,7 +127,7 @@ def handle_message(event, say):
 @app.event("app_mention")
 def handle_bot_practice_channel_messages(event, say):
     """Handles messages where the bot is mentioned in the 'random' channel and replies in a thread."""
-    if event.get("channel") == BOT_PRACTICE_CHANNEL_ID:  
+    if event.get("channel") == BOT_PRACTICE_CHANNEL_ID:
         user_message = event.get("text")
         user_id = event.get("user")
 
