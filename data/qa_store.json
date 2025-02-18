@@ -3,18 +3,21 @@
         "question": "Who can I ask for help?",
         "answer": "Answer: Soor\nAnswer: Liv",
         "channel_id": "C06TPPJ49GV",
-        "thread_ts": "1739304460.074639"
+        "thread_ts": "1739304460.074639",
+        "uuid": "c546b6ca9fce4acf8854e1426e698dab"
     },
     {
         "question": "Is there a way to delete messages in Slack?",
         "answer": "Answer: Yes, hover over your message, click the three dots, and select 'Delete message' (if your admin allows it).",
         "channel_id": "C06TPPJ49GV",
-        "thread_ts": "1739304404.825049"
+        "thread_ts": "1739304404.825049",
+        "uuid": "3669bff1f1c54087a318323673528b56"
     },
     {
         "question": "What are the Slack bot commands?",
         "answer": "Answer: Please use one of the following prefixes:\n\"Echo:\",\n\"Chat:\"",
         "channel_id": "C06TPPJ49GV",
-        "thread_ts": "1739304368.357309"
+        "thread_ts": "1739304368.357309",
+        "uuid": "1c7ec3a619df45978b7d48562ddd2c32"
     }
 ]

@@ -6,3 +6,4 @@ uvicorn
 python-dotenv
 sentence-transformers 
 scipy
+weaviate-client
