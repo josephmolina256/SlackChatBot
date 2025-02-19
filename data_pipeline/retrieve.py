@@ -1,15 +1,11 @@
 import weaviate
 import weaviate.classes as wvc
-from fastapi import FastAPI
 from sentence_transformers import SentenceTransformer
 
-import atexit
 from typing import List, Dict
 
 from .constants import WEAVIATE_COLLECTION_NAME, K_RETRIEVALS, CERTAINTY_THRESHOLD, HF_MODEL_NAME
 
-
-app = FastAPI()
 
 class Retriever:
     def __init__(self):
@@ -36,31 +32,5 @@ class Retriever:
                     "properties": object.properties
                 }
             )
-            print(object.metadata.certainty)
-            print(object.properties)
-            print("\n\n")
+
         return res
-
-retriever = None
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-@app.get("/spawn_retriever")
-def spawn_retriever():
-    global retriever
-    retriever = Retriever()
-    return {"message": "Retriever spawned"}
-
-@app.get("/retrieve")
-def retrieve(question: str):
-    response = retriever.retrieve(question)
-    return response
-
-
-def close_client():
-    if retriever and retriever.weaviate_client:
-        retriever.weaviate_client.close()
-
-atexit.register(close_client)

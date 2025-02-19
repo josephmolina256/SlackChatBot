@@ -3,16 +3,14 @@ import weaviate.classes as wvc
 import traceback
 from typing import List, Dict
 
-import weaviate.classes as wvc
-
-from .constants import WEAVIATE_COLLECTION_NAME
+from .constants import WEAVIATE_COLLECTION_NAME, HF_MODEL_NAME
 
 
 from sentence_transformers import SentenceTransformer
 
 class Storer:
     def __init__(self):
-        self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.embedding_model = SentenceTransformer(HF_MODEL_NAME)
         self.weaviate_client = weaviate.connect_to_local()
         assert self.weaviate_client.is_live()
 

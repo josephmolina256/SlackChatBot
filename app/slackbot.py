@@ -69,21 +69,6 @@ def handle_message(event, say):
         say(res)
 
 
-@app.event("app_mention")
-def handle_bot_practice_channel_messages(event, say):
-    """Handles messages where the bot is mentioned in the 'random' channel and replies in a thread."""
-    user_message = event.get("text")
-    user_id = event.get("user")
-
-    # Use 'thread_ts' if it's provided, otherwise, reply in a new thread
-    thread_ts = event.get("thread_ts") or event.get("ts")  
-
-    say(
-        text=f"Hello <@{user_id}>, you said: {user_message}",
-        thread_ts=thread_ts  # Reply in the same thread
-    )
-
-
 fastapi_app = FastAPI()
 
 handler = SlackRequestHandler(app)
@@ -107,11 +92,9 @@ if __name__ == "__main__":
         retriever.weaviate_client.close()
         sys.exit(0)
 
-    # Handle Ctrl+C and termination signals
     signal.signal(signal.SIGINT, cleanup)  # Handles Ctrl+C
     signal.signal(signal.SIGTERM, cleanup)  # Handles process termination
 
-    # Main application loop (example)
     try:
         uvicorn.run(fastapi_app, host="0.0.0.0", port=50001)
     except KeyboardInterrupt:
