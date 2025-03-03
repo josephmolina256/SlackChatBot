@@ -4,7 +4,7 @@ from slack_bolt.adapter.fastapi import SlackRequestHandler
 from fastapi import FastAPI, Request
 import os
 from dotenv import load_dotenv
-from time import time
+from time import time, sleep
 
 from .chatbot.chatbot import HuggingChatWrapper
 from data_pipeline.retrieve import Retriever
@@ -16,8 +16,6 @@ chat_wrapper = HuggingChatWrapper() # Singleton chat wrapper
 chatbot = chat_wrapper.get_chatbot()
 
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"), signing_secret=os.environ.get("SIGNING_SECRET"))
-
-retriever = Retriever()
 
 
 @app.event("message")
@@ -58,7 +56,7 @@ def handle_message(event, say):
                 res = (
                         f"{chat_wrapper.get_chatbot().chat(context).wait_until_done()}\n\n"
                         f"Response time: {time() - now:.2f} seconds\n"
-                        f"References:\n{"\n".join([f"{i}. https://sfomttir.slack.com/archives/{item['properties']['channel_id']}/p{item['properties']['thread_ts'].replace('.', '')}" for i, item in enumerate(retrieved_data)])}\n"
+                        f"References:\n{"\n".join([f"{i+1}. https://sfomttir.slack.com/archives/{item['properties']['channel_id']}/p{item['properties']['thread_ts'].replace('.', '')}" for i, item in enumerate(retrieved_data)])}\n"
                 )
             else:
                 res = (
@@ -79,7 +77,7 @@ async def slack_events(request: Request):
 
 @fastapi_app.get("/")
 def ping():
-    return {"response": "SlackBot is running!"}
+    return {"response": "SlackBot is running!"} 
 
 
 if __name__ == "__main__":
@@ -96,6 +94,15 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, cleanup)  # Handles process termination
 
     try:
+        retriever = Retriever()
+        if not retriever.check_connection():
+            for _ in range(5):
+                if not retriever.client_reconnect():
+                    print("Failed to reconnect to Weaviate client. Retrying...")
+                    sleep(2)
+                else:
+                    break
+
         uvicorn.run(fastapi_app, host="0.0.0.0", port=50001)
     except KeyboardInterrupt:
         cleanup()
