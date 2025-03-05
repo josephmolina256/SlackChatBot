@@ -6,14 +6,14 @@ import os
 from dotenv import load_dotenv
 from time import time, sleep
 
-from .chatbot.chatbot import HuggingChatWrapper
+from .chatbot.chatbot import ChatClient
 from data_pipeline.retrieve import Retriever
 
 
 load_dotenv(override=True)
 
-chat_wrapper = HuggingChatWrapper() # Singleton chat wrapper
-chatbot = chat_wrapper.get_chatbot()
+client = ChatClient(provider="huggingface")
+
 
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"), signing_secret=os.environ.get("SIGNING_SECRET"))
 
@@ -54,7 +54,7 @@ def handle_message(event, say):
                     )
                 now = time()
                 res = (
-                        f"{chat_wrapper.get_chatbot().chat(context).wait_until_done()}\n\n"
+                        f"{client.chat(context).wait_until_done()}\n\n"
                         f"Response time: {time() - now:.2f} seconds\n"
                         f"References:\n{"\n".join([f"{i+1}. https://sfomttir.slack.com/archives/{item['properties']['channel_id']}/p{item['properties']['thread_ts'].replace('.', '')}" for i, item in enumerate(retrieved_data)])}\n"
                 )
