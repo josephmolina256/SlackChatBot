@@ -4,14 +4,14 @@ import weaviate.classes as wvc
 import traceback
 from typing import List, Dict
 
-from .constants import WEAVIATE_COLLECTION_NAME, HF_MODEL_NAME
+from .constants import WEAVIATE_COLLECTION_NAME, HF_EMBEDDING_MODEL_NAME
 
 
 from sentence_transformers import SentenceTransformer
 
 class Storer:
     def __init__(self):
-        self.embedding_model = SentenceTransformer(HF_MODEL_NAME)
+        self.embedding_model = SentenceTransformer(HF_EMBEDDING_MODEL_NAME)
         self.weaviate_client = weaviate.connect_to_local()
 
     def check_connection(self):
@@ -49,11 +49,16 @@ class Storer:
                 channel_id = thread["channel_id"]
                 uuid = thread["uuid"]
 
-                embedding = self.embedding_model.encode(head + "\n\n" + responses).tolist()
+                input = head 
+                if responses:
+                    input += "\n\n" + responses
+
+                embedding = self.embedding_model.encode(input).tolist()
 
                 wv_objs.append(wvc.data.DataObject(
                     uuid=uuid,
                     properties={
+                        "uuid": uuid,
                         "head": head,
                         "responses": responses,
                         "channel_id": channel_id,

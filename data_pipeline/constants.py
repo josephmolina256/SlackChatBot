@@ -1,8 +1,10 @@
 # Slack
+SLACK_WORKSPACE_NAME="ragtestspace"
 APPROVED_USER_GROUP="TAs"
+APPROVED_REACTIONS=set(["white_check_mark"])
 
 # HuggingFace
-HF_MODEL_NAME="multi-qa-distilbert-cos-v1"
+HF_EMBEDDING_MODEL_NAME="multi-qa-distilbert-cos-v1"
 """
    Other models to consider:
    nvidia/NV-Embed-v2
