@@ -2,6 +2,7 @@
 SLACK_WORKSPACE_NAME="ragtestspace"
 APPROVED_USER_GROUP="TAs"
 APPROVED_REACTIONS=set(["white_check_mark"])
+
 # HuggingFace
 HF_EMBEDDING_MODEL_NAME="multi-qa-distilbert-cos-v1"
 """

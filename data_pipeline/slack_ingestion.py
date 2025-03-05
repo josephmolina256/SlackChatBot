@@ -48,7 +48,7 @@ def handle_reaction(event):
                 print("Approved!")
                 print(event)
 
-                # get the message that was reacted to 
+                # get the message that was reacted to
                 channel_id = event.get("item").get("channel")
                 reply_ts = event.get("item").get("ts")
                 reply_with_metadata = app.client.conversations_replies(channel=channel_id, ts=reply_ts).get("messages", ["Invalid message"])[0]
@@ -67,9 +67,10 @@ def handle_reaction(event):
                     if head_message == "Invalid message":
                         print("Invalid head message.")
                         return
+                    
                     thread_messages = [
                         head_message,
-                        reply_with_metadata
+                        reply_with_metadata 
                     ]
                 else:
                     print("Not a reply to a thread, storing as a standalone message.")
