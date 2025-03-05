@@ -5,12 +5,12 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Dict
 import traceback
 
-from .constants import WEAVIATE_COLLECTION_NAME, K_RETRIEVALS, CERTAINTY_THRESHOLD, HF_MODEL_NAME
+from .constants import WEAVIATE_COLLECTION_NAME, K_RETRIEVALS, CERTAINTY_THRESHOLD, HF_EMBEDDING_MODEL_NAME
 
 
 class Retriever:
     def __init__(self):
-        self.embedding_model = SentenceTransformer(HF_MODEL_NAME)
+        self.embedding_model = SentenceTransformer(HF_EMBEDDING_MODEL_NAME)
         self.weaviate_client = weaviate.connect_to_local()
 
     def check_connection(self):

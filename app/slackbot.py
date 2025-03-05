@@ -9,6 +9,8 @@ from time import time, sleep
 from .chatbot.chatbot import ChatClient
 from data_pipeline.retrieve import Retriever
 
+from data_pipeline.constants import SLACK_WORKSPACE_NAME
+
 
 load_dotenv(override=True)
 
@@ -56,7 +58,7 @@ def handle_message(event, say):
                 res = (
                         f"{client.chat(context).wait_until_done()}\n\n"
                         f"Response time: {time() - now:.2f} seconds\n"
-                        f"References:\n{"\n".join([f"{i+1}. https://sfomttir.slack.com/archives/{item['properties']['channel_id']}/p{item['properties']['thread_ts'].replace('.', '')}" for i, item in enumerate(retrieved_data)])}\n"
+                        f"References:\n{"\n".join([f"{i+1}. https://{SLACK_WORKSPACE_NAME}.slack.com/archives/{item['properties']['channel_id']}/p{item['properties']['thread_ts'].replace('.', '')}?thread_ts={item['properties']['thread_ts'].replace('.', '')}&cid={item['properties']['channel_id']}" for i, item in enumerate(retrieved_data)])}\n"
                 )
             else:
                 res = (

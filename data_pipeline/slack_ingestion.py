@@ -9,7 +9,7 @@ from time import sleep
 
 from dotenv import load_dotenv
 
-from .constants import APPROVED_USER_GROUP
+from .constants import APPROVED_USER_GROUP, APPROVED_REACTIONS
 from .store import Storer
 
 
@@ -44,36 +44,46 @@ def set_approved_users(approver_usergroup_name: str) -> Optional[str]:
 def handle_reaction(event):
     try:    
         if event.get("user") in approved_user_set:
-            if event.get("reaction") == "white_check_mark":
+            if event.get("reaction") in APPROVED_REACTIONS:
                 print("Approved!")
                 print(event)
+
+                # get the message that was reacted to 
                 channel_id = event.get("item").get("channel")
-                thread_ts = event.get("item").get("ts")
-                slack_response = app.client.conversations_replies(channel=channel_id, ts=thread_ts)
-                print(slack_response)
-                thread_messages = slack_response.get("messages", [])
-                if len(thread_messages) >= 0 and "parent_user_id" in thread_messages[0]:
-                    head_thread_ts = thread_messages[0].get("thread_ts")
-                    slack_response = app.client.conversations_replies(channel=channel_id, ts=head_thread_ts)
-                    thread_messages = slack_response.get("messages", [])
-                else:
-                    print("No replies found in the thread.")
+                reply_ts = event.get("item").get("ts")
+                reply_with_metadata = app.client.conversations_replies(channel=channel_id, ts=reply_ts).get("messages", ["Invalid message"])[0]
+                reply_client_msg_id = reply_with_metadata.get("client_msg_id")
+                print(reply_with_metadata)
+
+                # check if the message is a reply to a thread or a standalone message
+                thread_messages = []
+                if reply_with_metadata == "Invalid message":
+                    print("Invalid message.")
                     return
-                checked_replies = []
-                for reply in thread_messages[1:]:
-                    for reaction in reply.get("reactions", []):
-                        if reaction.get("name") == "white_check_mark":
-                            checked_replies.append(reply)
-                            break
-                        checked_replies.append(reply)
+                elif "parent_user_id" in reply_with_metadata:
+                    head_thread_ts = reply_with_metadata.get("thread_ts")
+                    slack_response = app.client.conversations_replies(channel=channel_id, ts=head_thread_ts)
+                    head_message = slack_response.get("messages", ["Invalid message"])[0]
+                    if head_message == "Invalid message":
+                        print("Invalid head message.")
+                        return
+                    thread_messages = [
+                        head_message,
+                        reply_with_metadata
+                    ]
+                else:
+                    print("Not a reply to a thread, storing as a standalone message.")
+                    thread_messages = [
+                        reply_with_metadata
+                    ]
                 #TODO: Think about batching for the future
                 threads = [
                     {
                         "head": thread_messages[0].get("text"),
-                        "responses": "\n".join([m.get("text") for m in checked_replies]),
-                        "thread_ts": thread_ts,
+                        "responses": thread_messages[1].get("text") if len(thread_messages) > 1 else None,
+                        "thread_ts": reply_ts,
                         "channel_id": channel_id,
-                        "uuid": thread_messages[0].get("client_msg_id")
+                        "uuid": reply_client_msg_id
                     }
                 ]
                 storer.store(threads)
